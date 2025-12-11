@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         GitHub PR: Lines Viewed Progress Bar
+// @name         FourPDA Cleaner
 // @namespace    https://github.com/ilyachch-userscripts/
 // @version      1.0
-// @description  Adds a progress bar to GitHub PRs showing the number of lines viewed based on reviewed checkboxes.
+// @description  Removes advertising links from the 4pda.to website for a cleaner browsing experience.
 // @author       ilyachch
 // @homepage     https://github.com/ilyachch-userscripts/four-pda-cleaner
 // @source       https://raw.githubusercontent.com/ilyachch-userscripts/four-pda-cleaner/main/four-pda-cleaner.user.js
@@ -12,6 +12,9 @@
 // @license      MIT
 // @run-at       document-end
 // @grant        GM_addStyle
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_registerMenuCommand
 // @match        https://4pda.to/*
 // @icon         https://4pda.to/s/CBbKBwWAx2gpwRhz1cGtMFubQ.ico
 // ==/UserScript==
@@ -25,10 +28,25 @@ GM_addStyle(`
 (function () {
   "use strict";
 
-  function removeAdsLinks() {
-    console.log("Removing ads links");
-    // find all a tags where href matches template https://4pda.to/dddd/dd/dd/d+?/
+  const SHOW_RECOMMENDED_KEY = "show_recommended";
+  const showRecommended = GM_getValue(SHOW_RECOMMENDED_KEY, false);
 
+  function toggleRecommended() {
+    GM_setValue(SHOW_RECOMMENDED_KEY, !showRecommended);
+    location.reload();
+  }
+
+  GM_registerMenuCommand(
+    showRecommended ? "Hide recommended posts" : "Show recommended posts",
+    toggleRecommended
+  );
+
+  function cleanPage() {
+    if (showRecommended) return;
+
+    console.log("Cleaning page");
+
+    // find all a tags where href matches template https://4pda.to/dddd/dd/dd/d+?/
     const adsLinks = document.querySelectorAll("a");
     adsLinks.forEach((link) => {
       const href = link.getAttribute("href");
@@ -37,7 +55,22 @@ GM_addStyle(`
         link.style.display = "none !important";
       }
     });
+
+    // Hide recommended posts
+    const container = document.querySelector(
+      ".advanced-area.single.singlewside.singlewside"
+    );
+    if (container) {
+      const comments = container.querySelector("#comments");
+      if (comments) {
+        const recommended = comments.nextElementSibling;
+        if (recommended && recommended.tagName === "ARTICLE") {
+          console.log("Removing recommended posts: ", recommended);
+          recommended.style.display = "none";
+        }
+      }
+    }
   }
 
-  removeAdsLinks();
+  cleanPage();
 })();
