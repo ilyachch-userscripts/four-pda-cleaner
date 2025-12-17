@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FourPDA Cleaner
 // @namespace    https://github.com/ilyachch-userscripts/
-// @version      1.0
+// @version      1.1
 // @description  Removes advertising links from the 4pda.to website for a cleaner browsing experience.
 // @author       ilyachch
 // @homepage     https://github.com/ilyachch-userscripts/four-pda-cleaner
@@ -41,12 +41,9 @@ GM_addStyle(`
     toggleRecommended
   );
 
-  function cleanPage() {
-    if (showRecommended) return;
-
-    console.log("Cleaning page");
-
+  function remove_adsLinks() {
     // find all a tags where href matches template https://4pda.to/dddd/dd/dd/d+?/
+    console.log("Removing ad links");
     const adsLinks = document.querySelectorAll("a");
     adsLinks.forEach((link) => {
       const href = link.getAttribute("href");
@@ -55,11 +52,14 @@ GM_addStyle(`
         link.style.display = "none !important";
       }
     });
+  }
 
+  function cleanPage() {
     // Hide recommended posts
-    const container = document.querySelector(
-      ".advanced-area.single.singlewside.singlewside"
-    );
+    if (showRecommended) return;
+    console.log("Cleaning page");
+
+    const container = document.querySelector(".advanced-area.single.single");
     if (container) {
       const comments = container.querySelector("#comments");
       if (comments) {
@@ -72,5 +72,6 @@ GM_addStyle(`
     }
   }
 
+  remove_adsLinks();
   cleanPage();
 })();
